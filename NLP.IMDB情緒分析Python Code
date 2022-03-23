@@ -90,3 +90,19 @@ print(tfidf.fit_transform(count.fit_transform(docs))
 df.loc[0,'review'][-50:]
 #result: 'is seven.<br /><br />Title (Brazil): Not Available'
 #跑出上面一串垃圾,含有html標記,標點符號,其他非字母字元
+
+#使用Python正規表示式(Regular expression)函式庫,re函式庫
+import re
+# 第一個正規表示式長這樣 <[^>]*> 用來刪除電影評論數據集影評中所有的html標記,清除html標記後用其他正規表示式來找"表情符號"
+#(雖然有些工程式不建議用正規表示式來解析html)
+#正規表示式 [\w]+刪除本字中的所有非字元符號,並且轉換所有字元為小寫
+#暫時將儲存的表情符號(emoticons)加到處裡完畢的文件字串之後,刪除表情符號中的鼻子(-)
+#(我也想知道為什麼要刪掉鼻子)
+
+def preprocessor(text):
+    text = re.sub('<[^>]*>','',text)
+    emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)',
+                         text)
+    text = (re.sub('[\w]+','',text.lower())+
+            ''.join(emoticons).replace('-',''))
+    return text
