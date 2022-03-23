@@ -106,3 +106,15 @@ def preprocessor(text):
     text = (re.sub('[\w]+','',text.lower())+
             ''.join(emoticons).replace('-',''))
     return text
+    
+#確認預處裡器有正常運轉,清理過後的文件與字串最後附加表情符號
+preprocessor(df.loc[0,'review'][-50:])
+#03/23 完蛋了有錯
+
+preprocessor("</a>This :) is :( :( a test :-)!")
+
+df['review'] = df['review'].apply(preprocessor)
+
+def tokenizer(text):
+    return text.split()
+tokenizer('runners like running and thus they run')
