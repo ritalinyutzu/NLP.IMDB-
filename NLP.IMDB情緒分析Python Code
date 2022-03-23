@@ -109,7 +109,7 @@ def preprocessor(text):
     
 #確認預處裡器有正常運轉,清理過後的文件與字串最後附加表情符號
 preprocessor(df.loc[0,'review'][-50:])
-#!!!!!!Rita 03/23 18:34 註解: 完蛋了有錯!!!!!!
+#Rita 03/23 18:34 註解: 完蛋了有錯,怎麼只剩下表情符號,我的字咧!!!!!!
 
 #進行測試,裡面混表情符號
 preprocessor("</a>This :) is :( :( a test :-)!")
