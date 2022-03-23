@@ -47,3 +47,45 @@ df.head(3)
 #詞袋模型(bag-of-words)->將字串轉成數字特徵向量
 #(1)對於每個唯一字符(token)可以建立一個詞彙(vocabulary) 例如完整文件集中的字詞(word)就可以當作詞彙(vocabulary)
 #(2)對於每份文件,建立一個特徵向量,在這個向量裡,紀錄每個在這份特定文件出現的"字詞"和"出現的次數"
+#(3)文件中,word只佔token中的一小部分,因此sentiment中絕大部分是0,稱其為"稀疏"(sparse)
+
+#將word轉換成sentiment->利用scikit-learn中的CountVectorizer類別,依照每份文件word出現的次數,建立詞袋模型
+#CountVectorizer類別輸入一個array的文本數據,可以是許多文件,或許多句子,來建立詞袋模型
+
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+count = CountVectorizer()
+docs = np.array([
+    'The sun is shining',
+    'The weather is sweet',
+    'The sun is shining, and the weather is sweet, and one and one is two'
+])
+bag = count.fit_transform(docs)
+
+#呼叫CountVectorizer類別裡的fit_transform方法,產生詞袋模型的詞彙(word),將剛剛三個句子轉換成稀疏特徵向量
+print(count.vocabulary_)
+#result: word存在python的dictionary中
+
+#print特徵向量
+print(bag.toarray())
+#result: 又稱為原始詞頻(raw term)
+#函式:tf(t,d)->在一份文件d中,字詞term(t)出現次數
+
+#函示:idf(t,d)= log(nd/(1+df(d,t)))->反向文件頻率
+#字詞(word)出現在許多個文件之中,這些頻繁出現的字詞,沒有幫助判讀上下語意資訊的意義,簡稱廢詞
+#idf(term frequency-inverse document frequency,tf-idf)
+#nd = 文件總數, df(d,t) 字詞t的文件檔d的數量
+#log確保低頻文件不會被賦予太大的加權
+
+#sk-learn某轉換器,TfidfTransformer類別,從CountVectorizer類別輸入"原始詞頻"並轉換成tf-idfs
+from sklearn.feature_extraction.text import TfidfTransformer
+tfidf = TfidfTransformer(use_idf=True,
+                        norm='l2',  #L2正規化
+                        smooth_idf=True)
+np.set_printoptions(precision=2)
+print(tfidf.fit_transform(count.fit_transform(docs))
+     .toarray())
+     
+#先顯示電影評論集最後50個字元
+df.loc[0,'review'][-50:]
+#跑出一串垃圾,含有html標記,標點符號,其他非字母字元
