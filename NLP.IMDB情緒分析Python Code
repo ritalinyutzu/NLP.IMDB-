@@ -88,4 +88,5 @@ print(tfidf.fit_transform(count.fit_transform(docs))
      
 #先顯示電影評論集最後50個字元
 df.loc[0,'review'][-50:]
-#跑出一串垃圾,含有html標記,標點符號,其他非字母字元
+#result: 'is seven.<br /><br />Title (Brazil): Not Available'
+#跑出上面一串垃圾,含有html標記,標點符號,其他非字母字元
