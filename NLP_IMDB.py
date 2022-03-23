@@ -1,0 +1,218 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[6]:
+
+
+#以IMDB影評數據做文字處理
+#電影評論數據集下載處: http://ai.stanford.edu/~amaas/data/sentiment/   (大概84.1MB)
+#pip install tarfile
+
+import tarfile
+import os
+os.chdir("C:\\Users\\ritayutzu.lin\\Downloads")
+os.getcwd()
+
+
+# In[7]:
+
+
+#懶得下載7-zip解壓縮,可以在python中直接使用Gzip壓縮包,但要花點時間
+with tarfile.open('aclImdb_v1.tar.gz','r:gz') as tar:
+    tar.extractall()
+
+
+# In[9]:
+
+
+import pyprind
+import pandas as pd
+
+
+# In[10]:
+
+
+basepath = 'aclImdb'
+
+
+# In[13]:
+
+
+labels = {'pos':1,'neg':0}
+pbar = pyprind.ProgBar(50000)
+df = pd.DataFrame()
+
+
+# In[14]:
+
+
+for s in ('test','train'):
+    for l in ('pos','neg'):
+        path = os.path.join(basepath,s,l)
+        for file in os.listdir(path):
+            with open(os.path.join(path,file),
+                      'r',encoding='utf-8') as infile:
+                txt = infile.read()
+            df = df.append([[txt,labels[l]]],
+                           ignore_index=True)
+            pbar.update()
+            
+#初始化一個進度條物件pbar,含五萬次的迭代
+#使用巢狀for loop重複拜訪aclImdb主資料夾,train子目錄和test子目錄,讀取pos子目錄與neg子目錄其中的個別文本檔案
+#將這些檔案加到df的dataFrame後面,加一個表示極性的整數"類別標籤" (1是正面評價,0是負面評價)
+
+
+# In[15]:
+
+
+df.columns = ['review','sentiment']
+
+
+# In[16]:
+
+
+import numpy as np
+
+np.random.seed(0)
+df = df.reindex(np.random.permutation(df.index))
+df.to_csv('movie_data.csv',index=False,encoding='utf-8')
+
+
+# In[18]:
+
+
+#快速確認是否讀取成功
+df = pd.read_csv('./movie_data.csv')
+df.head(5)
+
+
+# In[19]:
+
+
+#詞袋模型(bag-of-words)->將字串轉成數字特徵向量(sentiment)
+#(1)對於每個唯一字符(token)可以建立一個詞彙(vocabulary) 例如完整文件集中的字詞(word)就可以當作詞彙(vocabulary)
+#(2)對於每份文件,建立一個特徵向量,在這個向量裡,紀錄每個在這份特定文件出現的"字詞"和"出現的次數"
+#(3)文件中,word只佔token中的一小部分,因此sentiment中絕大部分是0,稱其為"稀疏"(sparse)
+
+
+# In[23]:
+
+
+#將word轉換成sentiment->利用scikit-learn中的CountVectorizer類別,依照每份文件word出現的次數,建立詞袋模型
+#CountVectorizer類別輸入一個array的文本數據,可以是許多文件,或許多句子,來建立詞袋模型
+
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+count = CountVectorizer()
+docs = np.array([
+    'The sun is shining',
+    'The weather is sweet',
+    'The sun is shining, and the weather is sweet, and one and one is two'
+])
+bag = count.fit_transform(docs)
+
+
+# In[24]:
+
+
+#呼叫CountVectorizer類別裡的fit_transform方法,產生詞袋模型的詞彙(word),將剛剛三個句子轉換成稀疏特徵向量
+print(count.vocabulary_)
+#result: word存在python的dictionary中
+
+
+# In[27]:
+
+
+#print特徵向量
+print(bag.toarray())
+#result: 又稱為原始詞頻(raw term)
+#函式:tf(t,d)->在一份文件d中,字詞term(t)出現次數
+
+
+# In[28]:
+
+
+#函示:idf(t,d)= log(nd/(1+df(d,t)))->反向文件頻率
+#字詞(word)出現在許多個文件之中,這些頻繁出現的字詞,沒有幫助判讀上下語意資訊的意義,簡稱廢詞
+#idf(term frequency-inverse document frequency,tf-idf)
+#nd = 文件總數, df(d,t) 字詞t的文件檔d的數量
+#log確保低頻文件不會被賦予太大的加權
+
+
+# In[33]:
+
+
+#sk-learn某轉換器,TfidfTransformer類別,從CountVectorizer類別輸入"原始詞頻"並轉換成tf-idfs
+from sklearn.feature_extraction.text import TfidfTransformer
+tfidf = TfidfTransformer(use_idf=True,
+                        norm='l2',  #L2正規化
+                        smooth_idf=True)
+np.set_printoptions(precision=2)
+print(tfidf.fit_transform(count.fit_transform(docs))
+     .toarray())
+
+
+# In[34]:
+
+
+#先顯示電影評論集最後50個字元
+df.loc[0,'review'][-50:]
+#跑出一串垃圾,含有html標記,標點符號,其他非字母字元
+
+
+# In[37]:
+
+
+#使用Python正規表示式(Regular expression)函式庫,re函式庫
+import re
+# 第一個正規表示式長這樣 <[^>]*> 用來刪除電影評論數據集影評中所有的html標記,清除html標記後用其他正規表示式來找"表情符號"
+#(雖然有些工程式不建議用正規表示式來解析html)
+#正規表示式 [\w]+刪除本字中的所有非字元符號,並且轉換所有字元為小寫
+#暫時將儲存的表情符號(emoticons)加到處裡完畢的文件字串之後,刪除表情符號中的鼻子(-)
+#(我也想知道為什麼要刪掉鼻子)
+
+def preprocessor(text):
+    text = re.sub('<[^>]*>','',text)
+    emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)',
+                         text)
+    text = (re.sub('[\w]+','',text.lower())+
+            ''.join(emoticons).replace('-',''))
+    return text
+
+
+# In[38]:
+
+
+#確認預處裡器有正常運轉,清理過後的文件與字串最後附加表情符號
+preprocessor(df.loc[0,'review'][-50:])
+
+
+# In[39]:
+
+
+#進行測試,裡面混表情符號
+preprocessor("</a>This :) is :( :( a test :-)!")
+
+
+# In[40]:
+
+
+#對DataFrame中所有的電影評論,套用Preprocessor函數
+df['review'] = df['review'].apply(preprocessor)
+
+
+# In[41]:
+
+
+#成功準備好電影評論數據集後,需要考慮如何將文本語料庫(text corpora)分割成個別字符(token)元素 -> 字符化
+#字符化:依照空白字元(whitespace characters)分割文件成為單獨的字詞(token)
+def tokenizer(text):
+    return text.split()
+tokenizer('runners like running and thus they run')
+
+
+# In[ ]:
+
+
+
+
