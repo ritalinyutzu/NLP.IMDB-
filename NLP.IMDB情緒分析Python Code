@@ -64,7 +64,7 @@ bag = count.fit_transform(docs)
 
 #呼叫CountVectorizer類別裡的fit_transform方法,產生詞袋模型的詞彙(word),將剛剛三個句子轉換成稀疏特徵向量
 print(count.vocabulary_)
-#result: word存在python的dictionary中
+#>>>result: word存在python的dictionary中
 
 #print特徵向量
 print(bag.toarray())
@@ -88,7 +88,7 @@ print(tfidf.fit_transform(count.fit_transform(docs))
      
 #先顯示電影評論集最後50個字元
 df.loc[0,'review'][-50:]
-#result: 'is seven.<br /><br />Title (Brazil): Not Available'
+#>>>result: 'is seven.<br /><br />Title (Brazil): Not Available'
 #跑出上面一串垃圾,含有html標記,標點符號,其他非字母字元
 
 #使用Python正規表示式(Regular expression)函式庫,re函式庫
@@ -109,10 +109,10 @@ def preprocessor(text):
     
 #確認預處裡器有正常運轉,清理過後的文件與字串最後附加表情符號
 preprocessor(df.loc[0,'review'][-50:])
-#Rita 03/23 18:34 註解: 完蛋了有錯,怎麼只剩下表情符號,我的字咧!!!!!!
 
 #進行測試,裡面混表情符號
 preprocessor("</a>This :) is :( :( a test :-)!")
+#result>>>: Rita 03/23 18:34 註解: 完蛋了有錯,怎麼只剩下表情符號,我的字咧!!!!!!
 
 #對DataFrame中所有的電影評論,套用Preprocessor函數
 df['review'] = df['review'].apply(preprocessor)
@@ -122,3 +122,4 @@ df['review'] = df['review'].apply(preprocessor)
 def tokenizer(text):
     return text.split()
 tokenizer('runners like running and thus they run')
+result>>>: ['runners', 'like', 'running', 'and', 'thus', 'they', 'run']
