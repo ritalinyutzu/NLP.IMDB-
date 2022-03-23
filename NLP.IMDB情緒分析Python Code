@@ -111,10 +111,14 @@ def preprocessor(text):
 preprocessor(df.loc[0,'review'][-50:])
 #03/23 完蛋了有錯
 
+#進行測試,裡面混表情符號
 preprocessor("</a>This :) is :( :( a test :-)!")
 
+#對DataFrame中所有的電影評論,套用Preprocessor函數
 df['review'] = df['review'].apply(preprocessor)
 
+#成功準備好電影評論數據集後,需要考慮如何將文本語料庫(text corpora)分割成個別字符(token)元素 -> 字符化
+#字符化:依照空白字元(whitespace characters)分割文件成為單獨的字詞(token)
 def tokenizer(text):
     return text.split()
 tokenizer('runners like running and thus they run')
