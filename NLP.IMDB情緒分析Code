@@ -1,6 +1,6 @@
 #以IMDB影評數據做文字處理
 #電影評論數據集下載處: http://ai.stanford.edu/~amaas/data/sentiment/   (大概84.1MB)
-#pip install tarfile
+#pip install tarfile (jupyter notebook沒有內建此套件,記得pip或conda install)
 
 import tarfile
 import os
