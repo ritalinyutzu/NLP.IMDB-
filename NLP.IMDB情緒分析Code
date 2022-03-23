@@ -1,0 +1,49 @@
+#以IMDB影評數據做文字處理
+#電影評論數據集下載處: http://ai.stanford.edu/~amaas/data/sentiment/   (大概84.1MB)
+#pip install tarfile
+
+import tarfile
+import os
+os.chdir("C:\\Users\\ritayutzu.lin\\Downloads")
+os.getcwd()
+
+#懶得下載7-zip解壓縮,可以在python中直接使用Gzip壓縮包,但要花點時間
+with tarfile.open('aclImdb_v1.tar.gz','r:gz') as tar:
+    tar.extractall()
+    
+import pyprind
+import pandas as pd
+
+basepath = 'aclImdb'
+labels = {'pos':1,'neg':0}
+pbar = pyprind.ProgBar(50000)
+df = pd.DataFrame()
+
+#初始化一個進度條物件pbar,含五萬次的迭代
+#使用巢狀for loop重複拜訪aclImdb主資料夾,train子目錄和test子目錄,讀取pos子目錄與neg子目錄其中的個別文本檔案
+#將這些檔案加到df的dataFrame後面,加一個表示極性的整數"類別標籤" (1是正面評價,0是負面評價)
+for s in ('test','train'):
+    for l in ('pos','neg'):
+        path = os.path.join(basepath,s,l)
+        for file in os.listdir(path):
+            with open(os.path.join(path,file),
+                      'r',encoding='utf-8') as infile:
+                txt = infile.read()
+            df = df.append([[txt,labels[l]]],
+                           ignore_index=True)
+            pbar.update()
+            
+df.columns = ['review','sentiment']
+import numpy as np
+
+np.random.seed(0)
+df = df.reindex(np.random.permutation(df.index))
+df.to_csv('movie_data.csv',index=False,encoding='utf-8')
+
+#快速確認是否讀取成功
+df = pd.read_csv('./movie_data.csv')
+df.head(3)
+
+#詞袋模型(bag-of-words)->將字串轉成數字特徵向量
+#(1)對於每個唯一字符(token)可以建立一個詞彙(vocabulary) 例如完整文件集中的字詞(word)就可以當作詞彙(vocabulary)
+#(2)對於每份文件,建立一個特徵向量,在這個向量裡,紀錄每個在這份特定文件出現的"字詞"和"出現的次數"
