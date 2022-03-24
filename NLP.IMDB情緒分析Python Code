@@ -133,3 +133,13 @@ def tokenizer_porter(text):
 tokenizer_porter('runner like running and thus they run')
 #result>>>: ['runner', 'like', 'run', 'and', 'thu', 'they', 'run']
 #跟字符化可以獲得一樣的成果
+
+#波特詞幹還原演算法是最古老的詞幹還原演算法,另一種較新且受歡迎的還有"雪球詞幹還原器"(Snowball stemmer, Porter2) & Lancaster stemmer
+from nltk.corpus import stopwords
+stop = stopwords.words('english')
+[w for w in tokenizer_porter('a runner likes running and runs a lot')[-10:] if w not in stop]
+#result>>>:['runner', 'like', 'run', 'run', 'lot'] 沒有出現重複字詞
+
+
+
+#The end, Ritalinyutzu 2022/03/24 
