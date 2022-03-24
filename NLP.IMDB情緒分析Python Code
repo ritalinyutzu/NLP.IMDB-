@@ -123,3 +123,13 @@ def tokenizer(text):
     return text.split()
 tokenizer('runners like running and thus they run')
 result>>>: ['runners', 'like', 'running', 'and', 'thus', 'they', 'run']
+
+#token情境下,另一技術"詞幹"(word stemming),將字詞轉變成字根形式的過程,對應相關的字詞到詞幹->"波特詞幹還原演算法"(Porter stemmer algorithm)
+#NLTK是波特詞幹還原演算法的實作 -> visit website (http://www.nltk.org/book/)
+from nltk.stem.porter import PorterStemmer
+porter = PorterStemmer()
+def tokenizer_porter(text):
+    return [porter.stem(word) for word in text.split()]
+tokenizer_porter('runner like running and thus they run')
+#result>>>: ['runner', 'like', 'run', 'and', 'thu', 'they', 'run']
+#跟字符化可以獲得一樣的成果
