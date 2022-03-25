@@ -100,11 +100,11 @@ import re
 #(我也想知道為什麼要刪掉鼻子)
 
 def preprocessor(text):
-    text = re.sub('<[^>]*>','',text)
+    text = re.sub('<[^>]*>', '', text)
     emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)',
                          text)
-    text = (re.sub('[\w]+','',text.lower())+
-            ''.join(emoticons).replace('-',''))
+    text = (re.sub('[\W]+', ' ', text.lower()) +
+            ' '.join(emoticons).replace('-', ''))
     return text
     
 #確認預處裡器有正常運轉,清理過後的文件與字串最後附加表情符號
@@ -112,7 +112,6 @@ preprocessor(df.loc[0,'review'][-50:])
 
 #進行測試,裡面混表情符號
 preprocessor("</a>This :) is :( :( a test :-)!")
-#result>>>: Rita 03/23 18:34 註解: 完蛋了有錯,怎麼只剩下表情符號,我的字咧!!!!!!
 
 #對DataFrame中所有的電影評論,套用Preprocessor函數
 df['review'] = df['review'].apply(preprocessor)
